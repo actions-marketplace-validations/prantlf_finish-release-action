@@ -15,13 +15,57 @@ inputs:
     description: >-
       Can be set to `false` to prevent this action from running. It's helpful in the pipeline, which will not continue releasing, but only building and testing, and that will be decided in the middle of a job execution.
     default: true
+  no-node:
+    description: >-
+      Set to `true` to ignore `package.json` and not handle the project as a Node.js package.
+    default: false
+  no-vlang:
+    description: >-
+      Set to `true` not to ignore `v.mod` and not handle the project as a V package.
+    default: false
+  no-rust:
+    description: >-
+      Set to `true` not to ignore `Cargo.toml` and not handle the project as a Rust package.
+    default: false
+  no-golang:
+    description: >-
+      Set to `true` not to ignore `go.mod` and not handle the project as a Go package.
+    default: false
   no-bump:
     description: >-
       Set to `true` not to bump the version number in source files. Only the changelog will be modified.
     default: false
+  no-commit:
+    description: >-
+      Set to `true` not to commit the changes. If you set `no-bump`, you'll likely want to set `no-commit` and `no-push` too.
+    default: false
+  no-commit-skip-ci:
+    description: >-
+      Set to `true` not to add `[skip ci]` to the commit message of the changes. Doing it will have another pipeline triggered, if commits are watched.
+    default: false
+  no-tag:
+    description: >-
+      Set to `true` not to tag the commits. If you set `no-commit`, you don't have to set `no-tag`.
+    default: false
+  no-tag-skip-ci:
+    description: >-
+      Set to `true` not to add `[skip ci]` to the commit message of the tag. Doing it will have another pipeline triggered, if tags are watched.
+    default: false
+  no-push:
+    description: >-
+      Set to `true` not to push the committed changes. If you set `no-bump`, you'll likely want to set `no-commit` and `no-push` too.
+    default: false
   no-archives:
     description: >-
       Set to `true` not to upload platform archives automatically as release assets.
+    default: false
+  no-npm-auth:
+    description: >-
+      Set to `true` not to do not require NPM in the process environment token and write it to .npmrc. This is needed if you use trusted publishers (OIDC) instead of NPM tokens.
+    default: false
+  bump-major-0:
+    description: >-
+      Set to `true` to bump the major version also if it is 0.
     default: false
   dry-run:
     description: >-
@@ -59,21 +103,76 @@ runs:
     if: ${{ steps.setup.outputs.enable == 'true' }}
     shell: bash
     env:
+      FR_NO_NODE: ${{ inputs.no-node }}
+      FR_NO_VLANG: ${{ inputs.no-vlang }}
+      FR_NO_RUST: ${{ inputs.no-rust }}
+      FR_NO_GOLANG: ${{ inputs.no-golang }}
       FR_NO_BUMP: ${{ inputs.no-bump }}
+      FR_NO_COMMIT: ${{ inputs.no-commit }}
+      FR_NO_COMMIT_SKIP_CI: ${{ inputs.no-commit-skip-ci }}
+      FR_NO_TAG: ${{ inputs.no-tag }}
+      FR_NO_TAG_SKIP_CI: ${{ inputs.no-tag-skip-ci }}
+      FR_NO_PUSH: ${{ inputs.no-push }}
       FR_NO_ARCHIVES: ${{ inputs.no-archives }}
+      FR_NO_NPM_AUTH: ${{ inputs.no-npm-auth }}
+      FR_BUMP_MAJOR_0: ${{ inputs.bump-major-0 }}
       FR_DRY: ${{ inputs.dry-run }}
       FR_DEBUG: ${{ inputs.debug }}
     run: |
       git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
       git config --global user.name "github-actions[bot]"
       VP_OPTIONS="-yv --commit --tag"
+      if [[ "$FR_NO_NODE" == "true" ]]; then
+        echo "Node.js detection disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-node"
+      fi
+      if [[ "$FR_NO_VLANG" == "true" ]]; then
+        echo "V detection disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-vlang"
+      fi
+      if [[ "$FR_NO_RUST" == "true" ]]; then
+        echo "Rust detection disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-rust"
+      fi
+      if [[ "$FR_NO_GOLANG" == "true" ]]; then
+        echo "Go detection disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-golang"
+      fi
       if [[ "$FR_NO_BUMP" == "true" ]]; then
         echo "bumping version number disabled"
         VP_OPTIONS="$VP_OPTIONS --no-bump"
       fi
+      if [[ "$FR_NO_COMMIT" == "true" ]]; then
+        echo "committing changes disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-commit"
+      fi
+      if [[ "$FR_NO_COMMIT_SKIP_CI" == "true" ]]; then
+        echo "[skip-ci] from commit message removed"
+        VP_OPTIONS="$VP_OPTIONS --no-commit-skip-ci"
+      fi
+      if [[ "$FR_NO_TAG" == "true" ]]; then
+        echo "tagging commits disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-tag"
+      fi
+      if [[ "$FR_NO_TAG_SKIP_CI" == "true" ]]; then
+        echo "[skip-ci] from tag message removed"
+        VP_OPTIONS="$VP_OPTIONS --no-tag-skip-ci"
+      fi
+      if [[ "$FR_NO_PUSH" == "true" ]]; then
+        echo "pushing commits disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-push"
+      fi
       if [[ "$FR_NO_ARCHIVES" == "true" ]]; then
         echo "archives disabled"
         VP_OPTIONS="$VP_OPTIONS --no-archives"
+      fi
+      if [[ "$FR_NO_NPM_AUTH" == "true" ]]; then
+        echo "NPM authentication disabled"
+        VP_OPTIONS="$VP_OPTIONS --no-npm-auth"
+      fi
+      if [[ "$FR_BUMP_MAJOR_0" == "true" ]]; then
+        echo "bump to major 0 too"
+        VP_OPTIONS="$VP_OPTIONS --bump-major-0"
       fi
       if [[ "$FR_DRY" == "true" ]]; then
         echo "dry-run enabled"

@@ -48,6 +48,34 @@ Default: `true`
 
 Can be set to `false` to prevent this action from running. It's helpful in the pipeline, which will not continue releasing, but only building and testing, and that will be decided in the middle of a job execution.
 
+### no-node
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` to ignore `package.json` and not handle the project as a Node.js package.
+
+### no-vlang
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to ignore `v.mod` and not handle the project as a V package.
+
+### no-rust
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to ignore `Cargo.toml` and not handle the project as a Rust package.
+
+### no-golang
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to ignore `go.mod` and not handle the project as a Go package.
+
 ### no-bump
 
 Type: `Boolean`<br>
@@ -55,12 +83,61 @@ Default: `false`
 
 Set to `true` not to bump the version number in source files. Only the changelog will be modified.
 
+### no-commit
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to commit the changes. If you set `no-bump`, you'll likely want to set `no-commit` and `no-push` too.
+
+### no-commit-skip-ci
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to add `[skip ci]` to the commit message of the changes. Doing it will have another pipeline triggered, if commits are watched.
+
+### no-tag
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to tag the commits. If you set `no-commit`, you don't have to set `no-tag`.
+
+### no-tag-skip-ci
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to add `[skip ci]` to the commit message of the tag. Doing it will have another pipeline triggered, if tags are watched.
+
+### no-push
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to push the committed changes. If you set `no-bump`, you'll likely want to set `no-commit` and `no-push` too.
+
 ### no-archives
 
 Type: `Boolean`<br>
 Default: `false`
 
 Set to `true` not to upload platform archives automatically as release assets.
+
+### no-npm-auth
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` not to do not require NPM in the process environment token and write it to .npmrc. This is needed if you use trusted publishers (OIDC) instead of NPM tokens.
+
+### bump-major-0
+
+Type: `Boolean`<br>
+Default: `false`
+
+Set to `true` to bump the major version also if it is 0.
 
 ### dry-run
 
@@ -78,7 +155,7 @@ Can be set to `true` to enable debug logging of the supporting tools. Debug logg
 
 ## License
 
-Copyright (C) 2023 Ferdinand Prantl
+Copyright (C) 2023-2025 Ferdinand Prantl
 
 Licensed under the [MIT License].
 
